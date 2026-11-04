@@ -58,7 +58,9 @@ local:                          # 本地接入（SNMP + 可选 Web 接口）
   priv_password: ""
   web_user: ""                  # 本地 Web 管理账号（实验性）
   web_password: ""              # 本地 Web 管理密码
-  web_port: 80                  # 本地 Web 端口
+  web_port: 80                  # 本地 Web 端口（https 通常为 443）
+  web_scheme: "http"            # 本地 Web 协议 http/https
+  web_insecure: true            # 忽略 HTTPS 证书校验（爱快自签证书建议 true）
   login_mode: "auto"            # Web 登录密码模式：md5 / plain / auto
   log_endpoint: "/api/log/list"           # 日志查询端点（可校准）
   conn_endpoint: "/api/conntrack/table"   # 连接数查询端点（可校准）
@@ -116,10 +118,11 @@ ikuai-cli local clients
 ikuai-cli local routes
 
 # 本地 Web（实验性）：登录测试、任意调用、日志、连接数
-ikuai-cli local web login
-ikuai-cli local call /api/log/list
-ikuai-cli local logs --type operation
-ikuai-cli local conntrack
+# 爱快 Web 管理默认使用 HTTPS 自签证书，内网访问请加 --insecure（或 config web_insecure: true）
+ikuai-cli local web login --scheme https --insecure
+ikuai-cli local call /api/log/list --scheme https --insecure
+ikuai-cli local logs --type operation --scheme https --insecure
+ikuai-cli local conntrack --scheme https --insecure
 
 # 持续监控
 ikuai-cli monitor --source local
