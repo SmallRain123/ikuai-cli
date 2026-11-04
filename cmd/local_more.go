@@ -151,11 +151,13 @@ var callCmd = &cobra.Command{
 }
 
 var (
-	callMethod string
-	callBody   string
-	logType    string
-	logEndpt   string
-	connEndpt  string
+	callMethod  string
+	callBody    string
+	logType     string
+	logEndpt    string
+	connEndpt   string
+	webScheme   string // --scheme 覆盖 http/https
+	webInsecure bool   // --insecure 忽略 HTTPS 证书校验
 )
 
 var logsCmd = &cobra.Command{
@@ -218,8 +220,20 @@ func buildWeb(cfg *config.Config) (*local.WebClient, error) {
 	if cfg.Local.WebUser == "" || cfg.Local.WebPassword == "" {
 		return nil, fmt.Errorf("未配置 local.web_user / local.web_password，请先运行 `ikuai-cli config init` 填写")
 	}
-	baseURL := fmt.Sprintf("http://%s:%d", cfg.Local.RouterIP, cfg.Local.WebPort)
-	return local.NewWebClient(baseURL, cfg.Local.WebUser, cfg.Local.WebPassword, cfg.Local.LoginMode)
+	scheme := cfg.Local.WebScheme
+	if webScheme != "" {
+		scheme = webScheme
+	}
+	if scheme == "" {
+		scheme = "http"
+	}
+	// 端口 443 且未显式指定时自动推断为 https
+	if cfg.Local.WebPort == 443 && webScheme == "" && scheme == "http" {
+		scheme = "https"
+	}
+	insecure := cfg.Local.WebInsecure || webInsecure
+	baseURL := fmt.Sprintf("%s://%s:%d", scheme, cfg.Local.RouterIP, cfg.Local.WebPort)
+	return local.NewWebClient(baseURL, cfg.Local.WebUser, cfg.Local.WebPassword, cfg.Local.LoginMode, insecure)
 }
 
 func outputPretty(raw []byte) error {
@@ -245,4 +259,9 @@ func init() {
 	logsCmd.Flags().StringVar(&logType, "type", "", "日志类型 (system/operation/attack)")
 	logsCmd.Flags().StringVar(&logEndpt, "endpoint", "", "覆盖日志端点")
 	conntrackCmd.Flags().StringVar(&connEndpt, "endpoint", "", "覆盖连接数端点")
+	// 本地 Web 通用连接参数
+	for _, c := range []*cobra.Command{webLoginCmd, callCmd, logsCmd, conntrackCmd} {
+		c.Flags().StringVar(&webScheme, "scheme", "", "覆盖协议 http/https")
+		c.Flags().BoolVar(&webInsecure, "insecure", false, "忽略 HTTPS 证书校验（自签证书）")
+	}
 }

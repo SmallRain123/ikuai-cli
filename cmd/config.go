@@ -53,8 +53,15 @@ local:
   auth_password: ""
   priv_protocol: "AES"
   priv_password: ""
-  # web_user: ""           # 本地 Web 管理账号（实验性）
-  # web_password: ""
+  # --- 本地 Web 管理接口（实验性，非官方） ---
+  web_user: ""             # 本地 Web 管理账号
+  web_password: ""         # 本地 Web 管理密码
+  web_port: 80             # 本地 Web 端口（https 通常为 443）
+  web_scheme: "http"       # http / https
+  web_insecure: true       # 忽略 HTTPS 证书校验（爱快自签证书建议 true）
+  login_mode: "auto"       # 密码模式：md5 / plain / auto
+  # log_endpoint: "/api/log/list"
+  # conn_endpoint: "/api/conntrack/table"
 
 monitor:
   interval: 5              # 刷新间隔（秒）

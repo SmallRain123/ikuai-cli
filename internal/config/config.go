@@ -32,6 +32,8 @@ type LocalConfig struct {
 	WebUser      string `yaml:"web_user"`      // 本地 Web 管理账号（实验性）
 	WebPassword  string `yaml:"web_password"`  // 本地 Web 管理密码（实验性）
 	WebPort      uint16 `yaml:"web_port"`      // 本地 Web 端口，默认 80
+	WebScheme    string `yaml:"web_scheme"`    // 本地 Web 协议 http/https，默认 http
+	WebInsecure  bool   `yaml:"web_insecure"`  // 忽略 HTTPS 证书校验（自签证书用 true）
 	LoginMode    string `yaml:"login_mode"`    // 本地 Web 登录密码模式：md5 / plain / auto
 	LogEndpoint  string `yaml:"log_endpoint"`  // 日志查询端点，默认 /api/log/list
 	ConnEndpoint string `yaml:"conn_endpoint"` // 连接数查询端点，默认 /api/conntrack/table
@@ -105,6 +107,9 @@ func (c *Config) fillDefaults() {
 	}
 	if c.Local.WebPort == 0 {
 		c.Local.WebPort = 80
+	}
+	if c.Local.WebScheme == "" {
+		c.Local.WebScheme = "http"
 	}
 	if c.Local.LoginMode == "" {
 		c.Local.LoginMode = "auto"
